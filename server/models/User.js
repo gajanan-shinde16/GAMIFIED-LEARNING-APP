@@ -7,20 +7,25 @@ const userSchema = new mongoose.Schema(
     // --- Basic User Information ---
     username: {
       type: String,
-      required: true,
+      required: [true, 'Please provide a username'],
       unique: true,
       trim: true, // Removes whitespace from both ends
     },
     email: {
       type: String,
-      required: true,
+      required: [true, 'Please provide an email'],
       unique: true,
       trim: true,
       lowercase: true, // Stores the email in lowercase
+      match: [
+        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+        'Please provide a valid email',
+      ],
     },
     password: {
       type: String,
-      required: true,
+      required: [true, 'Please provide a password'],
+      minlength: 6,
     },
     // --- Gamification & Progress ---
     points: {

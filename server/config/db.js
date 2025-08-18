@@ -1,6 +1,8 @@
 // Import the Mongoose library
 import mongoose from 'mongoose';
+import colors from 'colors';
 
+mongoose.set('strictQuery', true);
 /**
  * Establishes a connection to the MongoDB database.
  * This is an asynchronous function because database operations can take time.
@@ -9,14 +11,16 @@ const connectDB = async () => {
   try {
     // Attempt to connect to the database using the connection string
     // from the environment variables.
-    const conn = await mongoose.connect(process.env.MONGO_URI);
+    const conn = await mongoose.connect(process.env.MONGO_URI, {
+      useUnifiedTopology: true,
+      useNewUrlParser: true,
+    });
 
     // If the connection is successful, log a confirmation message to the console.
-    // The `conn.connection.host` part will display the host of the connected database.
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    console.log(`MongoDB Connected: ${conn.connection.host}`.cyan.underline);
   } catch (error) {
     // If an error occurs during the connection attempt, log the error message.
-    console.error(`Error: ${error.message}`);
+    console.error(`Error: ${error.message}`.red.bold);
 
     // Exit the Node.js process with a failure code (1).
     // This is important because if the app can't connect to the database,
@@ -25,5 +29,5 @@ const connectDB = async () => {
   }
 };
 
-// Export the connectDB function using a named export
-export { connectDB };
+// Export the connectDB function
+export default connectDB;

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// The base URL for our backend API
-const API_URL = 'http://localhost:5000/api/auth/';
+// The base URL for our backend API's auth routes
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/auth/';
 
 /**
  * Registers a new user by making a POST request to the backend.
@@ -9,13 +9,15 @@ const API_URL = 'http://localhost:5000/api/auth/';
  * @returns {object} - The response data from the server, including user info and token.
  */
 const register = async (userData) => {
-  const response = await axios.post(API_URL + 'register', userData);
-
-  if (response.data) {
-    localStorage.setItem('user', JSON.stringify(response.data));
+  try {
+    const response = await axios.post(API_URL + 'register', userData);
+    if (response.data) {
+      localStorage.setItem('user', JSON.stringify(response.data));
+    }
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || 'A registration error occurred.';
   }
-
-  return response.data;
 };
 
 /**
@@ -24,13 +26,15 @@ const register = async (userData) => {
  * @returns {object} - The response data from the server, including user info and token.
  */
 const login = async (userData) => {
-  const response = await axios.post(API_URL + 'login', userData);
-
-  if (response.data) {
-    localStorage.setItem('user', JSON.stringify(response.data));
+  try {
+    const response = await axios.post(API_URL + 'login', userData);
+    if (response.data) {
+      localStorage.setItem('user', JSON.stringify(response.data));
+    }
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || 'An error occurred during login.';
   }
-
-  return response.data;
 };
 
 /**
@@ -51,8 +55,13 @@ const getProfile = async (token) => {
       Authorization: `Bearer ${token}`,
     },
   };
-  const response = await axios.get(API_URL + 'profile', config);
-  return response.data;
+
+  try {
+    const response = await axios.get(API_URL + 'profile', config);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || 'Could not fetch profile.';
+  }
 };
 
 
@@ -61,7 +70,7 @@ const authService = {
   register,
   login,
   logout,
-  getProfile, // Add the new function to the export
+  getProfile,
 };
 
 export default authService;

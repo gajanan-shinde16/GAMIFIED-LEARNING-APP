@@ -2,19 +2,27 @@ import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
 
-// @desc    Register a new user
-// @route   POST /api/auth/register
-// @access  Public
+/**
+ * @desc    Register a new user
+ * @route   POST /api/auth/register
+ * @access  Public
+ */
 const registerUser = asyncHandler(async (req, res) => {
   // 1. Get username, email, and password from the request body
-  const { username, email, password } = req.body;
+  const { username, email, password } = req.body; // Corrected this line
+
+  // Basic validation
+  if (!username || !email || !password) {
+    res.status(400);
+    throw new Error('Please add all fields');
+  }
 
   // 2. Check if a user with this email or username already exists
-  const userExists = await User.findOne({ $or: [{ email }, { username }] });
+  const userExists = await User.findOne({ email });
 
   if (userExists) {
     res.status(400); // Bad Request
-    throw new Error('User with this email or username already exists');
+    throw new Error('User with this email already exists');
   }
 
   // 3. If user does not exist, create a new user document in the database
@@ -31,6 +39,8 @@ const registerUser = asyncHandler(async (req, res) => {
       username: user.username,
       email: user.email,
       points: user.points,
+      badges: user.badges,
+      completedQuizzes: user.completedQuizzes,
       token: generateToken(user._id),
     });
   } else {
@@ -40,9 +50,11 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 
-// @desc    Authenticate a user and get a token
-// @route   POST /api/auth/login
-// @access  Public
+/**
+ * @desc    Authenticate a user and get a token
+ * @route   POST /api/auth/login
+ * @access  Public
+ */
 const loginUser = asyncHandler(async (req, res) => {
   // 1. Get email and password from the request body
   const { email, password } = req.body;
@@ -58,6 +70,8 @@ const loginUser = asyncHandler(async (req, res) => {
       username: user.username,
       email: user.email,
       points: user.points,
+      badges: user.badges,
+      completedQuizzes: user.completedQuizzes,
       token: generateToken(user._id),
     });
   } else {
@@ -68,12 +82,14 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 
-// @desc    Get user profile
-// @route   GET /api/auth/profile
-// @access  Private
+/**
+ * @desc    Get user profile
+ * @route   GET /api/auth/profile
+ * @access  Private
+ */
 const getUserProfile = asyncHandler(async (req, res) => {
   // The user's data is attached to the `req` object by the `protect` middleware
-  const user = req.user;
+  const user = await User.findById(req.user._id);
 
   if (user) {
     res.json({

@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // Import the useAuth hook
+import { useAuth } from '../context/AuthContext';
+import Spinner from '../components/common/Spinner';
 
-// The fully functional login page component
+/**
+ * The login page component.
+ * Allows existing users to sign in to their account.
+ */
 const LoginPage = () => {
-  // Get functions and state from our AuthContext
-  const { user, login, loading, error } = useAuth(); // Corrected this line
+  const { user, login, loading, error } = useAuth();
   const navigate = useNavigate();
 
-  // State to hold the form data
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
 
-  // Destructure for easier access
   const { email, password } = formData;
 
   // Redirect the user if they are already logged in
@@ -24,35 +25,35 @@ const LoginPage = () => {
     }
   }, [user, navigate]);
 
-  // Function to update state when user types
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  // Function to handle form submission
   const onSubmit = async (e) => {
     e.preventDefault();
     try {
       await login({ email, password });
-      // The useEffect will handle the redirect
+      // The useEffect will handle the redirect upon successful login
     } catch (err) {
-      // The error state from the context will be updated automatically
-      console.error('Login failed');
+      // The error state is handled by the AuthContext, so we just log it
+      console.error('Login failed:', err);
     }
   };
 
   return (
     <div className="page-container form-container">
+      {loading && <Spinner />}
       <h2>Log In</h2>
       <p>Sign in to your LearnSphere account</p>
 
-      {/* Display error messages */}
+      {/* Display API error messages */}
       {error && <p className="error-message">{error}</p>}
 
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} noValidate>
         <div className="form-group">
+          <label htmlFor="email">Email Address</label>
           <input
             type="email"
-            placeholder="Email Address"
+            id="email"
             name="email"
             value={email}
             onChange={onChange}
@@ -60,9 +61,10 @@ const LoginPage = () => {
           />
         </div>
         <div className="form-group">
+          <label htmlFor="password">Password</label>
           <input
             type="password"
-            placeholder="Password"
+            id="password"
             name="password"
             value={password}
             onChange={onChange}
@@ -70,7 +72,6 @@ const LoginPage = () => {
             required
           />
         </div>
-        {/* Disable the button while loading */}
         <button type="submit" className="btn btn-primary" disabled={loading}>
           {loading ? 'Logging In...' : 'Log In'}
         </button>

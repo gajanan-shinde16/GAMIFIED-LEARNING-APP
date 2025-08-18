@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // Import the useAuth hook
+import { useAuth } from '../context/AuthContext';
+import Spinner from '../components/common/Spinner';
 
-// The fully functional registration page component
+/**
+ * The registration page component.
+ * Allows new users to create an account.
+ */
 const RegisterPage = () => {
-  // Get functions and state from our AuthContext
   const { user, register, loading, error } = useAuth();
   const navigate = useNavigate();
 
-  // State to hold the form data
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
     password2: '', // For password confirmation
   });
-  const [message, setMessage] = useState(''); // For password mismatch message
+  const [message, setMessage] = useState('');
 
-  // Destructure for easier access
   const { username, email, password, password2 } = formData;
 
   // Redirect the user if they are already logged in
@@ -27,41 +28,45 @@ const RegisterPage = () => {
     }
   }, [user, navigate]);
 
-  // Function to update state when user types
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  // Function to handle form submission
   const onSubmit = async (e) => {
     e.preventDefault();
     if (password !== password2) {
       setMessage('Passwords do not match');
-    } else {
-      setMessage('');
-      try {
-        await register({ username, email, password });
-        // The useEffect will handle the redirect
-      } catch (err) {
-        // The error state from the context will be updated automatically
-        console.error('Registration failed');
-      }
+      return;
+    }
+    if (password.length < 6) {
+      setMessage('Password must be at least 6 characters');
+      return;
+    }
+    setMessage('');
+    try {
+      await register({ username, email, password });
+      // The useEffect will handle the redirect upon successful registration
+    } catch (err) {
+      // Error is already set in the AuthContext, so we just log it
+      console.error('Registration failed:', err);
     }
   };
 
   return (
     <div className="page-container form-container">
+      {loading && <Spinner />}
       <h2>Create an Account</h2>
       <p>Start your learning journey with LearnSphere</p>
-      
-      {/* Display error or password mismatch messages */}
+
+      {/* Display password mismatch or API error messages */}
       {message && <p className="error-message">{message}</p>}
       {error && <p className="error-message">{error}</p>}
 
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} noValidate>
         <div className="form-group">
+          <label htmlFor="username">Username</label>
           <input
             type="text"
-            placeholder="Username"
+            id="username"
             name="username"
             value={username}
             onChange={onChange}
@@ -69,9 +74,10 @@ const RegisterPage = () => {
           />
         </div>
         <div className="form-group">
+          <label htmlFor="email">Email Address</label>
           <input
             type="email"
-            placeholder="Email Address"
+            id="email"
             name="email"
             value={email}
             onChange={onChange}
@@ -79,9 +85,10 @@ const RegisterPage = () => {
           />
         </div>
         <div className="form-group">
+          <label htmlFor="password">Password</label>
           <input
             type="password"
-            placeholder="Password"
+            id="password"
             name="password"
             value={password}
             onChange={onChange}
@@ -90,9 +97,10 @@ const RegisterPage = () => {
           />
         </div>
         <div className="form-group">
+          <label htmlFor="password2">Confirm Password</label>
           <input
             type="password"
-            placeholder="Confirm Password"
+            id="password2"
             name="password2"
             value={password2}
             onChange={onChange}
@@ -100,7 +108,6 @@ const RegisterPage = () => {
             required
           />
         </div>
-        {/* Disable the button while loading */}
         <button type="submit" className="btn btn-primary" disabled={loading}>
           {loading ? 'Registering...' : 'Register'}
         </button>

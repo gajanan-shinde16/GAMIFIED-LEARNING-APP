@@ -9,11 +9,12 @@ import DashboardPage from './pages/DashboardPage';
 import QuizPage from './pages/QuizPage';
 import ReportPage from './pages/ReportPage';
 
-// Import Layout Components
-import Navbar from './components/layout/Navbar';
-import Footer from './components/layout/Footer';
+// Import Layout Components (Paths corrected here)
+import Navbar from './components/layouts/Navbar';
+import Footer from './components/layouts/Footer';
+import PrivateRoute from './components/routing/PrivateRoute';
 
-// Import Global Styles (optional, but good practice)
+// Import Global Styles
 import './assets/styles/global.css';
 
 function App() {
@@ -21,17 +22,40 @@ function App() {
     <Router>
       {/* Navbar will be displayed on every page */}
       <Navbar />
-      
+
       {/* Main content area where pages will be rendered */}
       <main className="container">
         <Routes>
-          {/* Define the route for each page */}
+          {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/quiz/:id" element={<QuizPage />} />
-          <Route path="/report" element={<ReportPage />} />
+
+          {/* Protected Routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <DashboardPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/quiz/:id"
+            element={
+              <PrivateRoute>
+                <QuizPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/report"
+            element={
+              <PrivateRoute>
+                <ReportPage />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </main>
 

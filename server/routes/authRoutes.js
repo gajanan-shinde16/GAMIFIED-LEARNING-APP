@@ -11,22 +11,28 @@ const router = express.Router();
 
 // --- Public Routes ---
 
-// @desc    Register a new user
-// @route   POST /api/auth/register
-// @access  Public
+/**
+ * @route   POST /api/auth/register
+ * @desc    Register a new user
+ * @access  Public
+ */
 router.post('/register', registerUser);
 
-// @desc    Authenticate a user and get a token
-// @route   POST /api/auth/login
-// @access  Public
+/**
+ * @route   POST /api/auth/login
+ * @desc    Authenticate a user and get a token
+ * @access  Public
+ */
 router.post('/login', loginUser);
 
 
 // --- Protected Route ---
 
-// @desc    Get user profile
-// @route   GET /api/auth/profile
-// @access  Private (requires a valid token)
+/**
+ * @route   GET /api/auth/profile
+ * @desc    Get user profile
+ * @access  Private (requires a valid token)
+ */
 router.get('/profile', protect, getUserProfile);
 
 

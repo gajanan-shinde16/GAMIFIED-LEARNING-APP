@@ -2,8 +2,8 @@ import jwt from 'jsonwebtoken';
 
 /**
  * Generates a JSON Web Token (JWT).
- * @param {string} id - The user's unique ID from the database.
- * @returns {string} - The generated JWT.
+ * @param {string} id - The user's unique ID from the database, which will be embedded in the token payload.
+ * @returns {string} - The generated JWT, signed with the secret key.
  */
 const generateToken = (id) => {
   // The `jwt.sign` method creates the token.

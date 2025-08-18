@@ -1,31 +1,51 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Spinner from '../components/common/Spinner';
 
-// The fully functional user engagement report component
+/**
+ * The report page, which displays the user's quiz history, badges, and recent quiz results.
+ */
 const ReportPage = () => {
-  const { user } = useAuth();
+  const { user, loading: userLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // State from the navigation after completing a quiz
+  const [results] = useState(location.state?.results);
+  const [quizTitle] = useState(location.state?.quizTitle);
+
 
   useEffect(() => {
-    // If no user is logged in, redirect to the login page
-    if (!user) {
+    // If the user is not logged in and we are not in a loading state, redirect to login
+    if (!userLoading && !user) {
       navigate('/login');
     }
-  }, [user, navigate]);
+  }, [user, userLoading, navigate]);
 
-  // If the user data is still loading, show a placeholder
-  if (!user) {
-    return <div className="page-container"><h2>Loading Report...</h2></div>;
+  if (userLoading || !user) {
+    return <Spinner />;
   }
 
   return (
-    <div className="page-container">
-      <header className="page-header">
-        <h2>Your Learning Engagement Report</h2>
+    <div className="page-container report-container">
+      <header className="page-header text-center">
+        <h2>Your Learning Report</h2>
         <p>A summary of your progress and achievements.</p>
       </header>
-      
+
+      {/* Display results from the quiz that was just completed */}
+      {results && (
+        <section className="report-section recent-quiz-results">
+          <h3>Results for: {quizTitle}</h3>
+          <div className="results-summary">
+            <p><strong>Score:</strong> {results.score.toFixed(2)}%</p>
+            <p><strong>Points Earned:</strong> {results.pointsEarned}</p>
+            <p><strong>Total Points:</strong> {results.totalPoints}</p>
+          </div>
+        </section>
+      )}
+
       <div className="report-grid">
         {/* Section for Badges */}
         <div className="report-section">
@@ -50,7 +70,7 @@ const ReportPage = () => {
             <table className="history-table">
               <thead>
                 <tr>
-                  <th>Quiz ID (Placeholder)</th>
+                  <th>Quiz ID</th>
                   <th>Score</th>
                   <th>Date Completed</th>
                 </tr>
@@ -69,6 +89,9 @@ const ReportPage = () => {
             <p>You haven't completed any quizzes yet.</p>
           )}
         </div>
+      </div>
+      <div className="text-center" style={{ marginTop: '2rem' }}>
+        <Link to="/dashboard" className="btn btn-primary">Back to Dashboard</Link>
       </div>
     </div>
   );

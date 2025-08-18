@@ -1,28 +1,34 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext'; // Updated path to context
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
-// The fully functional and dynamic navigation bar component
+/**
+ * The main navigation bar for the application.
+ * It displays different links depending on the user's authentication status.
+ */
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const onLogout = () => {
+  const handleLogout = () => {
     logout();
     navigate('/login'); // Redirect to login page after logout
   };
 
   // Links to show when a user is logged in
   const authLinks = (
-    <ul className="nav-links">
-      <li>
-        <span className="nav-username">Hello, {user?.username}</span>
+    <ul className="navbar-nav">
+      <li className="nav-item">
+        <span className="nav-greeting">Hello, {user?.username}</span>
       </li>
-      <li>
-        <Link to="/dashboard">Dashboard</Link>
+      <li className="nav-item">
+        <NavLink to="/dashboard" className="nav-link">Dashboard</NavLink>
       </li>
-      <li>
-        <button onClick={onLogout} className="nav-button-logout">
+       <li className="nav-item">
+        <NavLink to="/report" className="nav-link">Report</NavLink>
+      </li>
+      <li className="nav-item">
+        <button onClick={handleLogout} className="nav-button nav-button-logout">
           Logout
         </button>
       </li>
@@ -31,14 +37,14 @@ const Navbar = () => {
 
   // Links to show when no user is logged in
   const guestLinks = (
-    <ul className="nav-links">
-      <li>
-        <Link to="/login">Login</Link>
+    <ul className="navbar-nav">
+      <li className="nav-item">
+        <NavLink to="/login" className="nav-link">Login</NavLink>
       </li>
-      <li>
-        <Link to="/register" className="nav-button">
+      <li className="nav-item">
+        <NavLink to="/register" className="nav-link nav-button">
           Sign Up
-        </Link>
+        </NavLink>
       </li>
     </ul>
   );
@@ -49,9 +55,10 @@ const Navbar = () => {
         <Link to="/" className="nav-brand">
           LearnSphere
         </Link>
-        
-        {/* Conditionally render the links based on user state */}
-        {user ? authLinks : guestLinks}
+        <div className="nav-links">
+          {/* Conditionally render the links based on user state */}
+          {user ? authLinks : guestLinks}
+        </div>
       </div>
     </nav>
   );

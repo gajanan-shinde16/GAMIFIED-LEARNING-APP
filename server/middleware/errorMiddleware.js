@@ -37,6 +37,21 @@ const errorHandler = (err, req, res, next) => {
     message = 'Resource not found';
   }
 
+  // Mongoose duplicate key error
+  if (err.code === 11000) {
+    const field = Object.keys(err.keyValue)[0];
+    statusCode = 400;
+    message = `Duplicate field value entered for: ${field}. Please use another value.`;
+  }
+
+  // Mongoose validation error
+  if (err.name === 'ValidationError') {
+    statusCode = 400;
+    const errors = Object.values(err.errors).map((el) => el.message);
+    message = `Invalid input data. ${errors.join('. ')}`;
+  }
+
+
   // Send the final JSON response.
   res.status(statusCode).json({
     message: message,

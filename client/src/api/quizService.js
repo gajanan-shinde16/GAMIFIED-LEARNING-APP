@@ -1,27 +1,36 @@
 import axios from 'axios';
 
 // The base URL for our backend API's quiz routes
-const API_URL = 'http://localhost:5000/api/quizzes/';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/quizzes/';
 
 /**
  * Fetches a list of all available quizzes from the backend.
  * This is used for the main dashboard view.
- * @returns {Array} - An array of quiz objects.
+ * @returns {Promise<Array>} - An array of quiz objects.
  */
 const getAllQuizzes = async () => {
-  const response = await axios.get(API_URL);
-  return response.data;
+  try {
+    const response = await axios.get(API_URL);
+    return response.data;
+  } catch (error) {
+    // Throw a more specific error message
+    throw new Error(error.response?.data?.message || 'Could not fetch quizzes.');
+  }
 };
 
 /**
  * Fetches a single, detailed quiz by its ID.
  * This is used when a user starts a specific quiz.
  * @param {string} quizId - The ID of the quiz to fetch.
- * @returns {object} - The full quiz object, including questions.
+ * @returns {Promise<object>} - The full quiz object, including questions.
  */
 const getQuizById = async (quizId) => {
-  const response = await axios.get(API_URL + quizId);
-  return response.data;
+  try {
+    const response = await axios.get(API_URL + quizId);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Could not fetch the quiz.');
+  }
 };
 
 

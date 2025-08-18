@@ -2,33 +2,30 @@ import express from 'express';
 import {
   getAllQuizzes,
   getQuizById,
-  createQuiz, // We will add this controller function later
+  createQuiz,
 } from '../controllers/quizController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 // Initialize the Express router
 const router = express.Router();
 
-// --- Public Routes ---
+/**
+ * @route   GET /api/quizzes
+ * @desc    Fetch all quizzes (without questions for brevity)
+ * @access  Public
+ *
+ * @route   POST /api/quizzes
+ * @desc    Create a new quiz (Admin/Protected)
+ * @access  Private
+ */
+router.route('/').get(getAllQuizzes).post(protect, createQuiz);
 
-// @desc    Fetch all quizzes
-// @route   GET /api/quizzes
-// @access  Public
-router.get('/', getAllQuizzes);
-
-// @desc    Fetch a single quiz by its ID
-// @route   GET /api/quizzes/:id
-// @access  Public
-router.get('/:id', getQuizById);
-
-
-// --- Protected Route (Example for future use) ---
-
-// @desc    Create a new quiz
-// @route   POST /api/quizzes
-// @access  Private (e.g., only for admins or teachers)
-// For now, we will just set up the route. We'll implement the logic later.
-router.post('/', protect, createQuiz);
+/**
+ * @route   GET /api/quizzes/:id
+ * @desc    Fetch a single quiz by its ID (with questions)
+ * @access  Public
+ */
+router.route('/:id').get(getQuizById);
 
 
 // Export the router to be used in server.js

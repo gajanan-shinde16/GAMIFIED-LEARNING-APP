@@ -1,8 +1,8 @@
-import React,
-{
+import React, {
   createContext,
   useState,
-  useContext
+  useContext,
+  useEffect
 } from 'react';
 import authService from '../api/authService';
 
@@ -11,13 +11,19 @@ const AuthContext = createContext();
 
 // 2. Create the provider component
 export const AuthProvider = ({ children }) => {
-  // Get user from localStorage if it exists
-  const storedUser = JSON.parse(localStorage.getItem('user'));
-
-  // State to hold the authenticated user
-  const [user, setUser] = useState(storedUser);
-  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true); // Set initial loading to true
   const [error, setError] = useState(null);
+
+  // Check for a logged-in user when the app first loads
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    if (storedUser) {
+      setUser(storedUser);
+    }
+    setLoading(false); // Set loading to false after checking localStorage
+  }, []);
+
 
   // Function to handle user registration
   const register = async (userData) => {
@@ -28,7 +34,8 @@ export const AuthProvider = ({ children }) => {
       setUser(data);
       setLoading(false);
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      // The authService now throws a string error message
+      setError(err);
       setLoading(false);
       throw err;
     }
@@ -43,7 +50,7 @@ export const AuthProvider = ({ children }) => {
       setUser(data);
       setLoading(false);
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err);
       setLoading(false);
       throw err;
     }
@@ -55,7 +62,6 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  // --- NEW FUNCTION ---
   // Function to update the user's state after an action (like completing a quiz)
   const updateUser = async () => {
     if (user?.token) {
@@ -85,10 +91,15 @@ export const AuthProvider = ({ children }) => {
     register,
     login,
     logout,
-    updateUser, // Add the new function to the context value
+    updateUser,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {/* Render children only when not in the initial loading state */}
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };
 
 // 3. Create a custom hook for easy access to the context

@@ -2,7 +2,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import { connectDB } from './config/db.js'; // Use named import here
+import colors from 'colors';
+import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 // Import route files
@@ -66,5 +67,5 @@ const PORT = process.env.PORT || 5000;
 
 // Start the server and listen for incoming requests
 app.listen(PORT, () => {
-  console.log(`Server is running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  console.log(`Server is running in ${process.env.NODE_ENV} mode on port ${PORT}`.yellow.bold);
 });

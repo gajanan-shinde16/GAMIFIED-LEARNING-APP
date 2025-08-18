@@ -1,6 +1,9 @@
 import React from 'react';
 
-// A simple functional component for the site footer
+/**
+ * A simple functional component for the site footer.
+ * It displays the copyright information.
+ */
 const Footer = () => {
   return (
     <footer className="footer">

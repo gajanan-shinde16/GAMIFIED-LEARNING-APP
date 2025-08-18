@@ -5,19 +5,23 @@ import mongoose from 'mongoose';
 const questionSchema = new mongoose.Schema({
   questionText: {
     type: String,
-    required: true,
+    required: [true, 'Question text is required.'],
     trim: true,
   },
   // An array of possible answers for the question.
   answerOptions: [
     {
-      answerText: { type: String, required: true },
+      answerText: {
+        type: String,
+        required: [true, 'Answer text is required.'],
+      },
     },
   ],
   // The index of the correct answer in the answerOptions array.
   correctAnswerIndex: {
     type: Number,
-    required: true,
+    required: [true, 'Please specify the correct answer index.'],
+    min: 0,
   },
 });
 
@@ -27,13 +31,13 @@ const quizSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
+      required: [true, 'A title is required for the quiz.'],
       trim: true,
       unique: true,
     },
     description: {
       type: String,
-      required: true,
+      required: [true, 'A description is required.'],
     },
     difficulty: {
       type: String,

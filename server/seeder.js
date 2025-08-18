@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import { connectDB } from './config/db.js'; // Use named import
+import colors from 'colors';
+import connectDB from './config/db.js';
 import User from './models/User.js';
 import Quiz from './models/Quiz.js';
 import { quizzes } from './data/quizzes.js';
@@ -20,10 +21,10 @@ const importData = async () => {
     // Insert the sample quizzes
     await Quiz.insertMany(quizzes);
 
-    console.log('Data Imported! ✅');
+    console.log('Data Imported!'.green.inverse);
     process.exit();
   } catch (error) {
-    console.error(`Error: ${error.message}`);
+    console.error(`Error: ${error.message}`.red.inverse);
     process.exit(1);
   }
 };
@@ -34,10 +35,10 @@ const destroyData = async () => {
     await User.deleteMany();
     await Quiz.deleteMany();
 
-    console.log('Data Destroyed! 🗑️');
+    console.log('Data Destroyed!'.red.inverse);
     process.exit();
   } catch (error) {
-    console.error(`Error: ${error.message}`);
+    console.error(`Error: ${error.message}`.red.inverse);
     process.exit(1);
   }
 };

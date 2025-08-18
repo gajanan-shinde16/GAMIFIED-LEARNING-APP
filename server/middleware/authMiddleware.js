@@ -22,8 +22,13 @@ const protect = asyncHandler(async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       // 4. Find the user in the database using the ID from the token's payload.
-      // We exclude the password field from the returned user object.
+      // We exclude the password field from the returned user object for security.
       req.user = await User.findById(decoded.id).select('-password');
+
+      if (!req.user) {
+        res.status(401);
+        throw new Error('Not authorized, user not found');
+      }
 
       // 5. If the user is found, proceed to the next middleware or route handler.
       next();
