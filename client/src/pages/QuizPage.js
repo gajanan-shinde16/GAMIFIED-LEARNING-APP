@@ -5,10 +5,6 @@ import progressService from '../api/progressService';
 import { useAuth } from '../context/AuthContext';
 import Spinner from '../components/common/Spinner';
 
-/**
- * The page where users take a quiz.
- * It handles fetching the quiz, tracking answers, providing feedback, and submitting results.
- */
 const QuizPage = () => {
   const { id: quizId } = useParams();
   const navigate = useNavigate();
@@ -22,13 +18,14 @@ const QuizPage = () => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [userAnswers, setUserAnswers] = useState([]);
   const [isAnswered, setIsAnswered] = useState(false);
+  const [startTime, setStartTime] = useState(null);
 
-  // Fetch the quiz data
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
         const data = await quizService.getQuizById(quizId);
         setQuiz(data);
+        setStartTime(Date.now()); // Start timer when quiz loads
       } catch (err) {
         setError('Failed to load the quiz. Please try again.');
         console.error(err);
@@ -39,30 +36,26 @@ const QuizPage = () => {
     fetchQuiz();
   }, [quizId]);
 
-  // Memoized function for quiz submission
   const handleQuizSubmit = useCallback(async (finalAnswers) => {
     try {
+      const timeTaken = (Date.now() - startTime) / 1000; // Time in seconds
       const results = await progressService.submitQuizResult(
-        { quizId, answers: finalAnswers },
+        { quizId, answers: finalAnswers, timeTaken },
         user.token
       );
-      await updateUser(); // Fetch latest user profile to update points/badges
+      await updateUser();
       navigate('/report', { state: { results, quizTitle: quiz.title } });
     } catch (err) {
       setError('There was an error submitting your quiz. Please try again.');
       console.error(err);
     }
-  }, [quizId, user.token, updateUser, navigate, quiz?.title]);
+  }, [quizId, user.token, updateUser, navigate, quiz?.title, startTime]);
 
-
-  // Handle selecting an answer
   const handleAnswerSelect = (optionIndex) => {
     if (isAnswered) return;
     setSelectedAnswer(optionIndex);
   };
 
-
-  // Handle moving to the next question or finishing the quiz
   const handleNextQuestion = () => {
     const newAnswers = [...userAnswers, selectedAnswer];
     setUserAnswers(newAnswers);
@@ -75,24 +68,18 @@ const QuizPage = () => {
       if (currentQuestionIndex < quiz.questions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
       } else {
-        handleQuizSubmit(newAnswers.map(ans => ans));
+        handleQuizSubmit(newAnswers);
       }
-    }, 1500); // 1.5-second delay to show feedback
+    }, 1500);
   };
 
-
-  // Helper to determine the class for an answer button
   const getButtonClass = (optionIndex) => {
     if (!isAnswered) {
       return selectedAnswer === optionIndex ? 'answer-btn selected' : 'answer-btn';
     }
     const correctIndex = quiz.questions[currentQuestionIndex].correctAnswerIndex;
-    if (optionIndex === correctIndex) {
-      return 'answer-btn correct';
-    }
-    if (optionIndex === selectedAnswer && optionIndex !== correctIndex) {
-      return 'answer-btn incorrect';
-    }
+    if (optionIndex === correctIndex) return 'answer-btn correct';
+    if (optionIndex === selectedAnswer && optionIndex !== correctIndex) return 'answer-btn incorrect';
     return 'answer-btn';
   };
 
@@ -125,7 +112,7 @@ const QuizPage = () => {
           className="btn btn-primary"
           disabled={selectedAnswer === null || isAnswered}
         >
-          {isAnswered ? 'Next Question' : 'Submit Answer'}
+          {isAnswered ? 'Processing...' : 'Submit Answer'}
         </button>
       </div>
     </div>

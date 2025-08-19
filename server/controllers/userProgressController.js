@@ -31,14 +31,18 @@ const submitQuizResult = asyncHandler(async (req, res) => {
     throw new Error('You have already completed this quiz');
   }
 
+  // --- Start of Corrected Logic ---
+
+  // 1. Correctly and safely calculate the score
   let score = 0;
   quiz.questions.forEach((question, index) => {
-    if (answers[index] !== undefined && question.answerOptions[answers[index]]) {
-      if (question.correctAnswerIndex === answers[index]) {
-        score++;
-      }
+    // This is the simplified and robust way to check the answer
+    if (question.correctAnswerIndex === answers[index]) {
+      score++;
     }
   });
+
+  // --- End of Corrected Logic ---
 
   const totalQuestions = quiz.questions.length;
   const percentageScore = (score / totalQuestions) * 100;

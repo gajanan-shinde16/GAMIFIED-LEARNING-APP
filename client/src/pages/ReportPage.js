@@ -3,21 +3,15 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Spinner from '../components/common/Spinner';
 
-/**
- * The report page, which displays the user's quiz history, badges, and recent quiz results.
- */
 const ReportPage = () => {
   const { user, loading: userLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // State from the navigation after completing a quiz
   const [results] = useState(location.state?.results);
   const [quizTitle] = useState(location.state?.quizTitle);
 
-
   useEffect(() => {
-    // If the user is not logged in and we are not in a loading state, redirect to login
     if (!userLoading && !user) {
       navigate('/login');
     }
@@ -34,20 +28,19 @@ const ReportPage = () => {
         <p>A summary of your progress and achievements.</p>
       </header>
 
-      {/* Display results from the quiz that was just completed */}
       {results && (
         <section className="report-section recent-quiz-results">
           <h3>Results for: {quizTitle}</h3>
           <div className="results-summary">
             <p><strong>Score:</strong> {results.score.toFixed(2)}%</p>
             <p><strong>Points Earned:</strong> {results.pointsEarned}</p>
+            {results.speedBonus > 0 && <p><strong>Speed Bonus:</strong> {results.speedBonus}</p>}
             <p><strong>Total Points:</strong> {results.totalPoints}</p>
           </div>
         </section>
       )}
 
       <div className="report-grid">
-        {/* Section for Badges */}
         <div className="report-section">
           <h3>Your Badges</h3>
           {user.badges && user.badges.length > 0 ? (
@@ -63,7 +56,6 @@ const ReportPage = () => {
           )}
         </div>
 
-        {/* Section for Quiz History */}
         <div className="report-section">
           <h3>Quiz History</h3>
           {user.completedQuizzes && user.completedQuizzes.length > 0 ? (

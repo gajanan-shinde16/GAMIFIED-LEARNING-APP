@@ -2,43 +2,35 @@ import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
 
-/**
- * @desc    Register a new user
- * @route   POST /api/auth/register
- * @access  Public
- */
 const registerUser = asyncHandler(async (req, res) => {
-  // 1. Get username, email, and password from the request body
-  const { username, email, password } = req.body; // Corrected this line
+  const { username, email, password } = req.body;
 
-  // Basic validation
   if (!username || !email || !password) {
     res.status(400);
     throw new Error('Please add all fields');
   }
 
-  // 2. Check if a user with this email or username already exists
   const userExists = await User.findOne({ email });
 
   if (userExists) {
-    res.status(400); // Bad Request
+    res.status(400);
     throw new Error('User with this email already exists');
   }
 
-  // 3. If user does not exist, create a new user document in the database
   const user = await User.create({
     username,
     email,
-    password, // The password will be automatically hashed by the middleware in User.js
+    password,
   });
 
-  // 4. If user was created successfully, send back user data and a token
   if (user) {
-    res.status(201).json({ // 201 Created
+    res.status(201).json({
       _id: user._id,
       username: user.username,
       email: user.email,
       points: user.points,
+      level: user.level,
+      dailyStreak: user.dailyStreak,
       badges: user.badges,
       completedQuizzes: user.completedQuizzes,
       token: generateToken(user._id),
@@ -49,46 +41,46 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-
-/**
- * @desc    Authenticate a user and get a token
- * @route   POST /api/auth/login
- * @access  Public
- */
 const loginUser = asyncHandler(async (req, res) => {
-  // 1. Get email and password from the request body
   const { email, password } = req.body;
-
-  // 2. Find the user by email in the database
   const user = await User.findOne({ email });
 
-  // 3. Check if user exists AND if the entered password matches the hashed password
   if (user && (await user.matchPassword(password))) {
-    // 4. If credentials are correct, send back user data and a new token
+    const today = new Date();
+    const lastLogin = user.lastLogin || new Date(0);
+    today.setHours(0, 0, 0, 0);
+    lastLogin.setHours(0, 0, 0, 0);
+    
+    const diffTime = Math.abs(today - lastLogin);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 1) {
+      user.dailyStreak += 1;
+    } else if (diffDays > 1) {
+      user.dailyStreak = 1;
+    }
+    
+    user.lastLogin = new Date();
+    await user.save();
+
     res.json({
       _id: user._id,
       username: user.username,
       email: user.email,
       points: user.points,
+      level: user.level,
+      dailyStreak: user.dailyStreak,
       badges: user.badges,
       completedQuizzes: user.completedQuizzes,
       token: generateToken(user._id),
     });
   } else {
-    // 5. If credentials are incorrect, send an unauthorized error
-    res.status(401); // Unauthorized
+    res.status(401);
     throw new Error('Invalid email or password');
   }
 });
 
-
-/**
- * @desc    Get user profile
- * @route   GET /api/auth/profile
- * @access  Private
- */
 const getUserProfile = asyncHandler(async (req, res) => {
-  // The user's data is attached to the `req` object by the `protect` middleware
   const user = await User.findById(req.user._id);
 
   if (user) {
@@ -97,14 +89,15 @@ const getUserProfile = asyncHandler(async (req, res) => {
       username: user.username,
       email: user.email,
       points: user.points,
+      level: user.level,
+      dailyStreak: user.dailyStreak,
       badges: user.badges,
       completedQuizzes: user.completedQuizzes,
     });
   } else {
-    res.status(404); // Not Found
+    res.status(404);
     throw new Error('User not found');
   }
 });
-
 
 export { registerUser, loginUser, getUserProfile };
